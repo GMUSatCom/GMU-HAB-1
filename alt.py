@@ -5,16 +5,19 @@ import adafruit_mpl3115a2
 import csv
  
 class Alt:
-    def __init__(self):
-        self.i2c = busio.I2C(board.SCL, board.SDA)
-        self.sensor = adafruit_mpl3115a2.MPL3115A2(self.i2c)
+    def __init__(self, filename):
+        #This uses the board program to get the rpi pins for all pins
+        #The uses the current board version i2c pins
+        self.sensor = adafruit_mpl3115a2.MPL3115A2(busio.I2C(board.SCL, board.SDA))
         self.sensor.sealevel_pressure = 102250
+        self.filename = filename
  
     def write_data(self):
-        # Main loop to read the sensor values and print them every second.
-        while True:
-            with open('/home/pi/hab/data/alt.csv', 'a') as writeFile:
+        try:
+            with open(self.filename, 'a') as writeFile:
                 writer = csv.writer(writeFile)
                 altData = [self.sensor.altitude, self.sensor.temperature, self.sensor.pressure]
-                writer.writerow(altData)
-                time.sleep(1.0)
+                writer.writerow(altData)                
+        
+        except KeyboardInterrupt:
+            exit(0)
