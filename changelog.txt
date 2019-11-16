@@ -1,0 +1,6 @@
+-Added a seperate daemon thread for the picamera
+	this will allow the camera to run without affecting
+	the data colleciton of the GPS and Altimeter
+-Added support for the KeyboardInterrupt in the main function
+-There is now a string representation of the camera's status called cam_status
+-Put the main thread in a if __name__ == '__main__' block

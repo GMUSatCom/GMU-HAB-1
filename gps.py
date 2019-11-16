@@ -11,6 +11,7 @@ class Gps:
         self.com = None
         self.filename = filename
         self.connected = False
+        self.altitude = None
         
     def init_com_port(self):
          #attempt to init the com port for the gps serial connection   
@@ -32,6 +33,7 @@ class Gps:
         
         try:
             location = pynmea2.parse(self.com.readline().decode("utf-8")) # parse into an object with gps data            
+            self.altitude = location.altitude
             gpsData = [location.latitude, location.longitude, location.altitude, location.num_sats, location.timestamp, location.horizontal_dil]
             # put gps data in an array
             # open a writer using the csv library
@@ -51,3 +53,10 @@ class Gps:
         except:
             return False            
 
+    def get_altitude(self):
+        if self.altitude is None:
+            return 0
+        try:
+            return int(self.altitude)
+        except:
+            return 0
