@@ -11,7 +11,7 @@ class Imu:
         # I2C connection:
         i2c = busio.I2C(board.SCL, board.SDA)
         sensor = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
-         
+        self.file_name = file_name
         #SPI connection:
         # from digitalio import DigitalInOut, Direction
         # spi = busio.SPI(board.SCK, board.MOSI, board.MISO)

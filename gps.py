@@ -6,10 +6,10 @@ import csv
 # Reads GPS Data and writes it to gps.csv
 # B I G         B R A I N          T I M E
 class Gps:
-    def __init__(self, filename, com_port):
+    def __init__(self, file_name, com_port):
         self.com_location = com_port
         self.com = None
-        self.filename = filename
+        self.file_name = file_name
         self.connected = False
         self.altitude = None
         
@@ -26,7 +26,7 @@ class Gps:
         except serial.SerialException:            
             return False
 
-    def read(self):              
+    def update(self):              
         
         if self.connected is False:
             return False
@@ -37,7 +37,7 @@ class Gps:
             gpsData = [location.latitude, location.longitude, location.altitude, location.num_sats, location.timestamp, location.horizontal_dil]
             # put gps data in an array
             # open a writer using the csv library
-            with open(self.filename, 'a') as writeFile:
+            with open(self.file_name, 'a') as writeFile:
                 writer = csv.writer(writeFile)
                 writer.writerow(gpsData)
             

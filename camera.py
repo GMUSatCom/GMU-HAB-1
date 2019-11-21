@@ -6,9 +6,10 @@ from datetime import datetime
 # print altidute, time, etc. onto the picture at bottom right corner. 
 
 class Camera:
-    def __init__(self):
+    def __init__(self, video_path, image_path):
         self.piCam = PiCamera()
-        
+        self.video_path
+        self.image_path
         self.piCam.framerate = 30
         self.piCam.brightness = 50
         self.piCam.contrast = 50
@@ -18,7 +19,7 @@ class Camera:
         # self.piCam.start_preview() # default res
         self.piCam.resolution = (x, y)
         now = datetime.now().strftime("%d-%m-%Y_%H:%M:%S")
-        self.piCam.capture('/home/pi/hab/imgs/' + now +'.jpg')
+        self.piCam.capture(self.image_path + now +'.jpg')
         # self.piCam.stop_preview()
         sleep(2)
         
@@ -27,7 +28,7 @@ class Camera:
         # self.piCam.start_preview() # default res
         self.piCam.resolution = (x, y)
         now = datetime.now().strftime("%d-%m-%Y_%H:%M:%S")
-        self.piCam.start_recording('/home/pi/hab/vids/' + now +'.h264')
+        self.piCam.start_recording(self.video_path + now +'.h264')
         self.piCam.wait_recording(10)
         self.piCam.stop_recording()
         # self.piCam.stop_preview()
@@ -35,6 +36,3 @@ class Camera:
         
     def close(self):
         self.piCam.close()
-        
-        
-
