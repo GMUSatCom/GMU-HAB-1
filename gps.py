@@ -1,6 +1,5 @@
 import pynmea2
 import serial
-import time
 import csv
 
 # Reads GPS Data and writes it to gps.csv
@@ -13,7 +12,7 @@ class Gps:
         self.connected = False
         self.altitude = None
         
-    def init_com_port(self):
+    def Begin(self):
          #attempt to init the com port for the gps serial connection   
         try:
             #assign the serial port using the filename var (com port object)
@@ -23,10 +22,10 @@ class Gps:
             #return 
             return True
         #can't connect on serial com
-        except serial.SerialException:            
+        except:            
             return False
 
-    def update(self):              
+    def update(self):
         
         if self.connected is False:
             return False
@@ -39,14 +38,8 @@ class Gps:
             # open a writer using the csv library
             with open(self.file_name, 'a') as writeFile:
                 writer = csv.writer(writeFile)
-                writer.writerow(gpsData)
+                writer.writerow(gpsData)            
             
-            #print the values
-            #print("DEBUG for gps data")
-            #for i in range(len(gpsData)):
-            #    print(gpsData[i])                
-            #    print(", ")             
-            #everything worked return true
             return True
             
         #failed while hanleing gps coms return false    
