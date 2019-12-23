@@ -25,7 +25,7 @@ class Alt:
             with open(self.file_name, 'a') as write_file:
                 writer = csv.writer(write_file)    
                 writer.writerow(alt_data)
-            return True
+            return alt_data
         except:
             return False
             

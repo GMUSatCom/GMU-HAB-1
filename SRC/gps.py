@@ -40,7 +40,7 @@ class Gps:
                 writer = csv.writer(writeFile)
                 writer.writerow(gpsData)            
             
-            return True
+            return gpsData
             
         #failed while hanleing gps coms return false    
         except:

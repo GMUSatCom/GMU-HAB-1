@@ -7,27 +7,37 @@ from camera import *
 from gps import *
 from alt import *
 from imu import *
+from radio import *
 
 #TODO:
-#Handle I/O errors
 #run hab.py on startup
+#camera thread might need its own instance of the altimiter and gps modules?
 
-sleep_delay = 1.0
+sleep_delay = 0.4
 #Primary ic bus
 i2c_port = busio.I2C(board.SCL, board.SDA)
 
-#init the gps object with the file paths and gps serial path
-gps = Gps('/home/pi/hab/gpsData/gps.csv', '/dev/ttyS0' )
+#Create the gps object with the file paths and gps serial path
+gps = Gps('/home/pi/HAB/data/gps.csv', '/dev/ttyS0' )
 #Create the altimiter object and initialize it 
-alt = Alt('/home/pi/hab/altData/alt.csv', i2c_port)
+alt = Alt('/home/pi/HAB/data/alt.csv', i2c_port)
 #IMU object
-imu = Imu('/home/pi/hab/imuData/imu.csv', i2c_port)
+imu = Imu('/home/pi/HAB/data/imu.csv', i2c_port)
 # Create the Camera object with the file path
-cam = Camera('/home/pi/hab/vids/','/home/pi/hab/imgs/') 
+cam = Camera('/home/pi/HAB/data/vids/','/home/pi/HAB/data/imgs/')
+#Radio Data tags (must match groundstation software!)  
+imu_data_tag = bytes(b'\x02')
+gps_data_tag = bytes(b'\x03')
+alt_data_tag = bytes(b'\x04')
+beacon_tag=bytes(b'\xFF')
+#Radio Header IDs (Must match receiver firmware!) 
+radio_id = bytes(b'\x0A')
+gs_id = bytes(b'\x0A')
+#Radio Stream Object. Allows for writing to the radio data stream listener
+radio = RadioStream('/dev/lorastream.bin', radio_id , gs_id )
+
 #Target function for the Pycam's thread. Timing is handled by camera.py
 #changes the action of the camera based on the altitude of the balloon
-
-
 def pycam_thread(name):
     #current altitude
     altitude = 0
@@ -59,7 +69,7 @@ def pycam_thread(name):
                 cam.takePicture()
             else:
                 cam_status = "idle"
-            #print(cam_status)
+
             cam.close()
     except:
         pass
@@ -69,51 +79,67 @@ if __name__ == '__main__':
         print("Starting")
         #initialize the com port, its status belongs to the gps active var
         gps_active = gps.Begin()
-        # init the imu port
+        #init the imu port
         imu_active = imu.Begin()
         #init the altimiter
-        alt_active = atl.Begin()
+        alt_active = alt.Begin()
         
         if gps_active == False:
-            print("gps not active")
+            print("Could not start gps module, running without it!")
+            radio.Send(gps_data_tag, "Disabled")
+            time.sleep(sleep_delay)
         if imu_active == False:
-            print("imu not active")
+            print("Could not start imu module, running without it!")
+            radio.Send(imu_data_tag, "Disabled")
+            time.sleep(sleep_delay)
         if alt_active == False:
-            print("alt not active")
+            print("Could not start altimeter module, running without it!")
+            radio.Send(alt_data_tag, "Disabled")
+            time.sleep(sleep_delay)
             
         #the pycam thread so that it doesn't interfere with DATA collection
         #it is a daemon thread, meaning it will close when the main thread exits.
         pycam = threading.Thread(target=pycam_thread, args = (1,), daemon=True)
         pycam.start()
-        
-        while True:
-            
+
+        alt_update = False        
+        gps_update = False
+        imu_update = False
+        while True:            
             
             #Write Altimeter data only if it was started successfully
             if alt_active is True:
-                if alt.update() is False:           
-                    #Gps failed to update handle
-                    print("Alt failed to update")
-                    pass
-                
+                alt_update = alt.update()
+                if alt_update != False:           
+                    radio.Send(alt_data_tag, var)
+                else:
+                    radio.Send(alt_data_tag, "Failure")
+            #delay between Radio Transmission         
+            time.sleep(sleep_delay)
+            
             #If the gps is successfully started then use it skip it
             if gps_active is True:
-                if gps.update() is False:
-                    # If it failed to read the gps
-                    print("gps failed to update")
-                    pass
-                
-            if imu_active is True:
-                if imu.update() is False:
-                    #handle exception
-                    print("Imu failed to update")
-                    pass
-                    
-            #all unnecessary time delays that can happen from functions called here
-            #Use this timer to delay the main thread if other programs can handle it, so
-            #things can hopefully be syncronized 
+                gps_update = gps.update()
+                if gps_update != False:
+                    radio.Send(gps_data_tag, var)
+                else:
+                    radio.Send(gps_data_tag, "Failure")
+            #delay between Radio Transmission        
             time.sleep(sleep_delay)
+            
+            if imu_active is True:
+                imu_update = imu.update()
+                if imu_update != False:
+                    radio.Send(imu_data_tag, var)
+                else:
+                    radio.Send(imu_data_tag,"Failure")
+            #delay between Radio Transmission    
+            time.sleep(sleep_delay)
+
+            #If everything fails to send an update send a beacon 
+            if (alt_update and gps_update and imu_update)== False:
+                radio.Send(beacon_tag, "Beacon!") #send any set a bytes here it is our beacon when no data is sent
+
     except KeyboardInterrupt:
-        exit(0)
-    except:
-        pass
+       exit(0)
+ 

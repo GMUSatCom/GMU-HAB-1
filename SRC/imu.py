@@ -32,7 +32,7 @@ class Imu:
             with open(self.file_name, 'a') as write_file:
                 writer = csv.writer(write_file)
                 writer.writerow(imu_data)
-            return True
+            return imu_data
         except:
             return False
         # Print values.
