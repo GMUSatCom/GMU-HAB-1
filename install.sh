@@ -79,7 +79,8 @@ case $install in
 		fi
 
 		#Display i2c detect on screen
-		i2cdetect -y 1
+		echo "**Using the command 'sudo i2cdetect -y 1' will show you if your I2C device is properly connected and available, like this:" 
+		sudo i2cdetect -y 1
 		
 		#Enable SPI
 		echo "Enabling SPI"
@@ -107,7 +108,7 @@ case $install in
 		esac
 		echo "******************************************************************************************************"
 		echo "Test the LoRa Radio driver by typing 'sudo LoRaAirService' with the radio connected properly. Once the radio"
-		echo "driver is running properly, you may want to edit 'hab.py' and run it.You will need to run the 'LoRaAirService' " 
+		echo "driver is running properly, you may want to edit 'hab.py' and run it. You will need to run the 'LoRaAirService' " 
 		echo "driver either in the background using nohup and &(detatch) or open another terminal window. "
 		echo "Please use 'sudo python3 hab.py' to start the hab software suite. "		
 		echo "******************************************************************************************************"
@@ -207,7 +208,8 @@ case $install in
 				fi
 
 				#Display i2c detect on screen
-				i2cdetect -y 0
+				echo "**Using the command 'sudo i2cdetect -y 1' will show you if your I2C device is properly connected and available, like this:" 
+				sudo i2cdetect -y 1
 			;;
 		esac
 
@@ -249,7 +251,7 @@ case $install in
 		esac
 		echo "******************************************************************************************************"
 		echo "Test the LoRa Radio driver by typing 'sudo LoRaAirService' with the radio connected properly. Once the radio"
-		echo "driver is running properly, you may want to edit 'hab.py' and run it.You will need to run the 'LoRaAirService' " 
+		echo "driver is running properly, you may want to edit 'hab.py' and run it. You will need to run the 'LoRaAirService' " 
 		echo "driver either in the background using nohup and &(detatch) or open another terminal window. "
 		echo "Please use 'sudo python3 hab.py' to start the hab software suite. "		
 		echo "******************************************************************************************************"
