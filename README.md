@@ -2,7 +2,7 @@
 
 Software and Hardware design files for the first GMU SatCom High Altitude Balloon Experiments.
 
-### This branch is a work in progess containing all of the HAB project files to work with the hardware devices we chose.
+This branch is a work in progess containing all of the HAB project files to work with the hardware devices we chose.
 
 -The SRC Folder contains all of the project source files needed for functionality of the HAB as we designed it
 
