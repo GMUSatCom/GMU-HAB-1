@@ -42,7 +42,7 @@ class Gps:
             
             return gpsData
             
-        #failed while hanleing gps coms return false    
+        #failed while handling gps coms return false    
         except:
             return False            
 

@@ -8,23 +8,28 @@ from gps import *
 from alt import *
 from imu import *
 from radio import *
+from os import path
 
 #TODO:
 #run hab.py on startup
 #camera thread might need its own instance of the altimiter and gps modules?
 
-sleep_delay = 0.4
+sensor_poll_rate = 0.5
 #Primary ic bus
 i2c_port = busio.I2C(board.SCL, board.SDA)
-
+#install root path 
+root_dir = path.dirname(path.realpath(__file__))
+csv_dir = root_dir+'/data'
+print("Working directory: "+root_dir)
+print("Captured data directory: "+csv_dir)
 #Create the gps object with the file paths and gps serial path
-gps = Gps('/home/pi/HAB/data/gps.csv', '/dev/ttyS0' )
+gps = Gps(csv_dir+'/gps.csv', '/dev/ttyS0' )
 #Create the altimiter object and initialize it 
-alt = Alt('/home/pi/HAB/data/alt.csv', i2c_port)
+alt = Alt(csv_dir+'/alt.csv', i2c_port)
 #IMU object
-imu = Imu('/home/pi/HAB/data/imu.csv', i2c_port)
+imu = Imu(csv_dir+'/imu.csv', i2c_port)
 # Create the Camera object with the file path
-cam = Camera('/home/pi/HAB/data/vids/','/home/pi/HAB/data/imgs/')
+cam = Camera(csv_dir+'/vids/',csv_dir+'/imgs/')
 #Radio Data tags (must match groundstation software!)  
 imu_data_tag = bytes(b'\x02')
 gps_data_tag = bytes(b'\x03')
@@ -73,7 +78,7 @@ def pycam_thread(name):
             cam.close()
     except:
         pass
-        
+
 if __name__ == '__main__':
     try:
         print("Starting")
@@ -83,63 +88,57 @@ if __name__ == '__main__':
         imu_active = imu.Begin()
         #init the altimiter
         alt_active = alt.Begin()
-        
+
         if gps_active == False:
             print("Could not start gps module, running without it!")
             radio.Send(gps_data_tag, "Disabled")
-            time.sleep(sleep_delay)
         if imu_active == False:
             print("Could not start imu module, running without it!")
             radio.Send(imu_data_tag, "Disabled")
-            time.sleep(sleep_delay)
         if alt_active == False:
             print("Could not start altimeter module, running without it!")
             radio.Send(alt_data_tag, "Disabled")
-            time.sleep(sleep_delay)
-            
+
         #the pycam thread so that it doesn't interfere with DATA collection
         #it is a daemon thread, meaning it will close when the main thread exits.
         pycam = threading.Thread(target=pycam_thread, args = (1,), daemon=True)
         pycam.start()
 
-        alt_update = False        
+        alt_update = False
         gps_update = False
         imu_update = False
-        while True:            
-            
+        while True:
+
             #Write Altimeter data only if it was started successfully
             if alt_active is True:
                 alt_update = alt.update()
-                if alt_update != False:           
+                if alt_update != False:
                     radio.Send(alt_data_tag, var)
                 else:
                     radio.Send(alt_data_tag, "Failure")
-            #delay between Radio Transmission         
-            time.sleep(sleep_delay)
-            
-            #If the gps is successfully started then use it skip it
+
+            #Write gps data only if it was started successfully
             if gps_active is True:
                 gps_update = gps.update()
                 if gps_update != False:
                     radio.Send(gps_data_tag, var)
                 else:
                     radio.Send(gps_data_tag, "Failure")
-            #delay between Radio Transmission        
-            time.sleep(sleep_delay)
-            
+
+            #Write imu data only if it was started successfully
             if imu_active is True:
                 imu_update = imu.update()
                 if imu_update != False:
                     radio.Send(imu_data_tag, var)
                 else:
                     radio.Send(imu_data_tag,"Failure")
-            #delay between Radio Transmission    
-            time.sleep(sleep_delay)
 
             #If everything fails to send an update send a beacon 
             if (alt_update and gps_update and imu_update)== False:
                 radio.Send(beacon_tag, "Beacon!") #send any set a bytes here it is our beacon when no data is sent
 
+            time.sleep(sensor_poll_rate)
+
     except KeyboardInterrupt:
        exit(0)
- 
+
