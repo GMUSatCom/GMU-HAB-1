@@ -11,7 +11,7 @@ class RadioStream:
     #Strings are encoded with utf-8 and sent to the filestream where the radio program will send it
     def Send(self, data_id_tag, string):
       try:
-            timeout = 100
+            timeout = 300
             while(path.exists(self.file_path) and timeout>0):
                 time.sleep(.01)
                 timeout=timeout-1
@@ -33,7 +33,7 @@ class RadioStream:
 
     def SendBytes(self,data_id, bytes_var):
       try:
-            timeout = 100
+            timeout = 300
             while(path.exists(self.file_path) and timeout>0):
                 time.sleep(.01)
                 timeout=timeout-1

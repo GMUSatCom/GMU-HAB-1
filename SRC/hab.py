@@ -8,13 +8,13 @@ from gps import *
 from alt import *
 from imu import *
 from radio import *
-from os import path
+from os import *
 
 #TODO:
 #run hab.py on startup
 #camera thread might need its own instance of the altimiter and gps modules?
 
-sensor_poll_rate = 0.5
+sensor_poll_rate = .5
 #Primary ic bus
 i2c_port = busio.I2C(board.SCL, board.SDA)
 #install root path 
@@ -40,6 +40,13 @@ radio_id = bytes(b'\x0A')
 gs_id = bytes(b'\x0A')
 #Radio Stream Object. Allows for writing to the radio data stream listener
 radio = RadioStream('/dev/lorastream.bin', radio_id , gs_id )
+
+if(path.exists(csv_dir) is False):
+    try:
+        os.mkdir(csv_dir)
+    except:
+        print("Could not make directories, exiting")
+        exit(0)
 
 #Target function for the Pycam's thread. Timing is handled by camera.py
 #changes the action of the camera based on the altitude of the balloon
@@ -140,5 +147,5 @@ if __name__ == '__main__':
             time.sleep(sensor_poll_rate)
 
     except KeyboardInterrupt:
-       exit(0)
+       exit(1)
 

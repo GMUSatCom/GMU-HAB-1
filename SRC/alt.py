@@ -1,5 +1,6 @@
 import adafruit_mpl3115a2
 import csv
+from os import path
 
 class Alt:
     def __init__(self, file_name, i2c_port):       
@@ -10,10 +11,14 @@ class Alt:
         
     def Begin(self):
         try:
-            #This uses the board program to get the rpi pins for all pins
-            #The uses the current board version i2c pins
+            #The uses the ic2 bus passed in from the objects constructor
             self.sensor = adafruit_mpl3115a2.MPL3115A2(self.i2c_bus)
             self.sensor.sealevel_pressure = 102250
+            #If the files dont already exist create new files and add their headers 
+            if(path.exists(self.file_name) is False):
+                with open(self.file_name, 'w+') as writeFile:
+                    writer = csv.DictWriter(writeFile, fieldnames=["Altitude", "Temperature","Pressure"])
+                    writer.writeheader()
             return True
         except:
             return False
@@ -22,7 +27,7 @@ class Alt:
         try:
             self.altitude = self.sensor.altitude
             alt_data = [self.altitude, self.sensor.temperature, self.sensor.pressure]
-            with open(self.file_name, 'a') as write_file:
+            with open(self.file_name, 'a+') as write_file:
                 writer = csv.writer(write_file)    
                 writer.writerow(alt_data)
             return alt_data
