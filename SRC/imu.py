@@ -30,14 +30,15 @@ class Imu:
     def update(self):
         try:
             # Read acceleration, magnetometer, gyroscope, temperature.
-            accel_x, accel_y, accel_z = sensor.acceleration
-            mag_x, mag_y, mag_z = sensor.magnetic
-            gyro_x, gyro_y, gyro_z = sensor.gyro
-            temp = sensor.temperature
+            accel_x, accel_y, accel_z = self.sensor.acceleration
+            mag_x, mag_y, mag_z = self.sensor.magnetic
+            gyro_x, gyro_y, gyro_z = self.sensor.gyro
+            temp = self.sensor.temperature
             imu_data = [accel_x, accel_y, accel_z, mag_x, mag_y, mag_z, gyro_x, gyro_y, gyro_z, temp]
             with open(self.file_name, 'a+') as write_file:
                 writer = csv.writer(write_file)
                 writer.writerow(imu_data)
-            return imu_data
+            #just return the imu acceleration, and the measured outside temp. 
+            return str(accel_x +", " + accel_y +", " + accel_z, temp)
         except:
             return False

@@ -1,8 +1,8 @@
 import os
 import time
 import threading
-import board
 import busio
+from board import *
 from camera import *
 from gps import *
 from alt import *
@@ -12,11 +12,9 @@ from os import *
 
 #TODO:
 #run hab.py on startup
-#camera thread might need its own instance of the altimiter and gps modules?
 
-sensor_poll_rate = .5
 #Primary ic bus
-i2c_port = busio.I2C(board.SCL, board.SDA)
+i2c_port = busio.I2C(SCL, SDA)
 #install root path 
 root_dir = path.dirname(path.realpath(__file__))
 csv_dir = root_dir+'/data'
@@ -24,8 +22,12 @@ print("Working directory: "+root_dir)
 print("Captured data directory: "+csv_dir)
 #Create the gps object with the file paths and gps serial path
 gps = Gps(csv_dir+'/gps.csv', '/dev/ttyS0' )
+#gps lock object for syncronized access
+gps_lock = threading.Lock()
 #Create the altimiter object and initialize it 
 alt = Alt(csv_dir+'/alt.csv', i2c_port)
+#altimeter lock object for syncronized access
+alt_lock = threading.Lock()
 #IMU object
 imu = Imu(csv_dir+'/imu.csv', i2c_port)
 # Create the Camera object with the file path
@@ -47,44 +49,47 @@ if(path.exists(csv_dir) is False):
     except:
         print("Could not make directories, exiting")
         exit(0)
-
 #Target function for the Pycam's thread. Timing is handled by camera.py
 #changes the action of the camera based on the altitude of the balloon
 def pycam_thread(name):
-    #current altitude
-    altitude = 0
-    #the current status of the picamera
-    cam_status = ""
-    try:
-        while True:            
-            success = 0 # Counts the successful calls to get altitude
-            temp_altitude = altitude #temporary storage for altitude
-            altitude = 0
-            
-            #Averages both GPS and Altimeter Altitude readings (If they updated correctly)
-            if gps.get_altitude() != 0: # Has not errored
-                altitude += gps.get_altitude()
-                success += 1
-            if alt.get_altitude() != 0: # Has not errored
-                altitude += alt.get_altitude()
-                success += 1
-            if success != 0:
-                altitude /= success
-            else:
-                altitude = temp_altitude            
-            
-            if gps.get_altitude() > 0:
-                cam_status = "video"
-                cam.takeVideo()
-            elif gps.get_altitude() > 4000: 
-                cam_status = "picture"
-                cam.takePicture()
-            else:
-                cam_status = "idle"
+        #current altitude
+        altitude = 0
+        #the current status of the picamera
+        cam_status = "idle"
+        try:
+                while True: 
+			#counts the successful calls to get altitude
+                        success = 0 
+                        #averages both GPS and Altimeter Altitude readings (If they updated correctly)
+                        altitude = 0
+                        
+                        #Attempt to acqurie a lock on the gps lock object and block the thread until we acquire it
+                        with gps_lock:
+                                alt_1 = gps.get_altitude()                       
+                        
+                        if gps_alt != 0: # Has not errored
+                                altitude += gps_alt
+                                success += 1
+                        #Attempt to acqurie a lock on the altimeter lock object and block the thread until we acquire it
+                        with alt_lock:
+                                alt_2 = alt.get_altitude()
+               
+                        if alt_2 != 0: # Has not errored
+                                altitude += alt_2
+                                success += 1
 
-            cam.close()
-    except:
-        pass
+                        if success != 0:
+                                altitude /= success
+                                if altitude > 0 and altitude < 30000:
+                                        cam_status = "video"
+                                        cam.takeVideo()
+                                elif altitude > 30000: 
+                                        cam_status = "picture"
+                                        cam.takePicture()
+                                else:
+                                        cam_status = "idle"
+        except:
+               pass
 
 if __name__ == '__main__':
     try:
@@ -114,37 +119,35 @@ if __name__ == '__main__':
         alt_update = False
         gps_update = False
         imu_update = False
+        #The radio driver program will control the time delays, since it can take up to 2 seconds to send a single message, or timeout
         while True:
-
             #Write Altimeter data only if it was started successfully
             if alt_active is True:
-                alt_update = alt.update()
+                #blocking mode
+                with alt_lock:
+                    alt_update = alt.update()
+                    
                 if alt_update != False:
-                    radio.Send(alt_data_tag, var)
-                else:
-                    radio.Send(alt_data_tag, "Failure")
+                    radio.Send(alt_data_tag, alt_update)
 
             #Write gps data only if it was started successfully
             if gps_active is True:
-                gps_update = gps.update()
+                #blocking mode
+                with gps_lock:                    
+                    gps_update = gps.update()
+                    
                 if gps_update != False:
-                    radio.Send(gps_data_tag, var)
-                else:
-                    radio.Send(gps_data_tag, "Failure")
+                    radio.Send(gps_data_tag, gps_update)               
 
             #Write imu data only if it was started successfully
             if imu_active is True:
                 imu_update = imu.update()
                 if imu_update != False:
-                    radio.Send(imu_data_tag, var)
-                else:
-                    radio.Send(imu_data_tag,"Failure")
-
+                    radio.Send(imu_data_tag, imu_update)
+               
             #If everything fails to send an update send a beacon 
-            if (alt_update and gps_update and imu_update)== False:
-                radio.Send(beacon_tag, "Beacon!") #send any set a bytes here it is our beacon when no data is sent
-
-            time.sleep(sensor_poll_rate)
+            if alt_update==False and gps_update==False and imu_update==False:
+                radio.Send(beacon_tag, "Sensors inactive!") #send any set a bytes here it is our beacon when no data is collected
 
     except KeyboardInterrupt:
        exit(1)

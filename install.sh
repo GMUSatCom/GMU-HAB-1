@@ -21,7 +21,9 @@ case $install in
 		sudo rm -rf $base/git
 		echo "Creating PATH reference for LoRaAirService Radio Driver" 
 		sudo chmod +x $base/LoRaAirService
-		sudo ln -s $base/LoRaAirService /bin/LoRaAirService
+		sudo ln $base/LoRaAirService /bin/LoRaAirService
+		echo "Making the startup scrip executable"
+		sudo chmod +x $base/startup.sh
 
 		
 		#Start python installs
@@ -107,10 +109,9 @@ case $install in
 			;;
 		esac
 		echo "******************************************************************************************************"
-		echo "Test the LoRa Radio driver by typing 'sudo LoRaAirService' with the radio connected properly. Once the radio"
-		echo "driver is running properly, you may want to edit 'hab.py' and run it. You will need to run the 'LoRaAirService' " 
-		echo "driver either in the background using nohup and &(detatch) or open another terminal window. "
-		echo "Please use 'sudo python3 hab.py' to start the hab software suite. "		
+		echo "The file RadioServerTestInfo contains all the info on running and debugging the radio server."
+		echo "Now the startup scrip should be executable. You can start the entire system by typing 'bash startup.sh'"
+		echo "The installation is complete. Enjoy collecting data! - From GMU SATCOM"
 		echo "******************************************************************************************************"
 		exit 1
 	;; 
@@ -128,7 +129,9 @@ case $install in
 		sudo rm -rf $base/git
 		echo "Creating PATH reference for LoRaAirService Radio Driver" 
 		sudo chmod +x $base/LoRaAirService
-		sudo ln -s $base/LoRaAirService /bin/LoRaAirService
+		sudo ln $base/LoRaAirService /bin/LoRaAirService
+		echo "Making the startup scrip executable"
+		sudo chmod +x $base/startup.sh
 		
 
 		read -p "Install Blinka module for busio? [y/n] " blinka		
@@ -250,10 +253,9 @@ case $install in
 			;;
 		esac
 		echo "******************************************************************************************************"
-		echo "Test the LoRa Radio driver by typing 'sudo LoRaAirService' with the radio connected properly. Once the radio"
-		echo "driver is running properly, you may want to edit 'hab.py' and run it. You will need to run the 'LoRaAirService' " 
-		echo "driver either in the background using nohup and &(detatch) or open another terminal window. "
-		echo "Please use 'sudo python3 hab.py' to start the hab software suite. "		
+		echo "The file RadioServerTestInfo contains all the info on running and debugging the radio server."
+		echo "Now the startup scrip should be executable. You can start the entire system by typing 'bash startup.sh'"
+		echo "The installation is complete. Enjoy collecting data! - From GMU SATCOM"
 		echo "******************************************************************************************************"
 		exit 1		
 	;; 

@@ -24,16 +24,21 @@ class Alt:
             return False
  
     def update(self):
-        try:
+        #try:
+            #put altimeter data into an array
+            alt_data = [self.sensor.altitude, self.sensor.temperature, self.sensor.pressure]
+            #lock the altitude while we write to it
             self.altitude = self.sensor.altitude
-            alt_data = [self.altitude, self.sensor.temperature, self.sensor.pressure]
+            #write to data to a csv file
             with open(self.file_name, 'a+') as write_file:
-                writer = csv.writer(write_file)    
+                writer = csv.writer(write_file) 
                 writer.writerow(alt_data)
-            return alt_data
-        except:
-            return False
-            
+
+            return str(alt_data[0]) +"," + str(alt_data[1]) +", " + str(alt_data[2])
+        #return false if altimeter comms failed
+        #except:
+            #return False
+
     def get_altitude(self):
         if self.altitude is None:
             return 0
@@ -41,3 +46,4 @@ class Alt:
             return int(self.altitude)
         except:
             return 0
+

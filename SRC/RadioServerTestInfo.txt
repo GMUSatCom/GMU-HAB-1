@@ -1,0 +1,15 @@
+Testing Radio Server
+
+When using the intsall bash script the radio server (aka LoRaAirService) should have been converted to an exe and a hardlink should have been place in your /bin directory. This means
+typing "sudo LoRaAirService" from any directory should result in the radio server starting. 
+
+Typing "sudo LoRaAirService -d" puts the server into debug mode which allows you to see version infromation and operations completed by 
+the radio server. 
+
+However often times the synchonization of the output filestream can cause a process slowdown and result in corrupted data 
+to be sent across the radio when operating without delays. This means you should only use the debug mode to make sure the 
+server is running and data is being recieved and or sent when requested. You should run without debug mode when in normal operation.
+
+Debug mode will also display the rf95 radio version, software version, and driver version. The output will also confirm system compatability 
+and tell you if it cannot establish comunications with the radio module (likely wiring or loose connection) 
+
