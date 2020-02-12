@@ -46,7 +46,7 @@ class Gps:
             with open(self.file_name, 'a+') as writeFile:
                 writer = csv.writer(writeFile)
                 writer.writerow(gpsData)
-            return srt(location.latitude, location.longitude, location.altitude)
+            return str(gpsData[0]) +","+ str(gpsData[1]) +","+ str(gpsData[2])
         #return false if gps com failed
         except:
             return False

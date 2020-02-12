@@ -39,6 +39,6 @@ class Imu:
                 writer = csv.writer(write_file)
                 writer.writerow(imu_data)
             #just return the imu acceleration, and the measured outside temp. 
-            return str(accel_x +", " + accel_y +", " + accel_z, temp)
+            return str(accel_x) + ", "+ str(accel_y) +", "+ str(accel_z) +","+ str(temp)
         except:
             return False
