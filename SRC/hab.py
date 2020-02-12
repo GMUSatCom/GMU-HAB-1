@@ -46,6 +46,9 @@ radio = RadioStream('/dev/lorastream.bin', radio_id , gs_id )
 if(path.exists(csv_dir) is False):
     try:
         os.mkdir(csv_dir)
+        os.mkdir(csv_dir+'/vids/')
+        os.mkdir(csv_dir+'/imgs/')
+        
     except:
         print("Could not make directories, exiting")
         exit(0)

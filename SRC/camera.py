@@ -12,8 +12,8 @@ def preview(function):
 class Camera:
     def __init__(self, video_path, image_path):
         self.piCam = PiCamera()
-        self.video_path
-        self.image_path
+        self.video_path = video_path
+        self.image_path = image_path
         self.piCam.framerate = 30
         self.piCam.brightness = 50
         self.piCam.contrast = 50
