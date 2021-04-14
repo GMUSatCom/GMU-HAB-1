@@ -1,0 +1,8 @@
+-Added Imu class(currently only reads and prints data)
+-Camera thread now averages altitude from GPS and Altimeter
+to determine the camera's actions
+-Changed function names to be consistently named
+ update() for Alt,Gps, and Imu classes
+-Commented several lines of code (see comments)
+
+
